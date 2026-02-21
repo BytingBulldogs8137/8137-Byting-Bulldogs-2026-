@@ -47,16 +47,13 @@ public class DriveConstants {
   public static final int frontRightTurnCanId = 6;
   public static final int backRightTurnCanId = 8;
 
-  public static final int frontLeftEncoderCanId = 10;
-  public static final int backLeftEncoderCanId = 11;
-  public static final int frontRightEncoderCanId = 12;
-  public static final int backRightEncoderCanId = 13;
-
   // Drive motor configuration
-  public static final int driveMotorCurrentLimit = 30;
+  public static final int driveMotorCurrentLimit = 50;
   public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
-  public static final double driveMotorReduction = 5.08;
-  public static final DCMotor driveGearbox = DCMotor.getNEO(1);
+  public static final double driveMotorReduction =
+      (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth
+  // and 22 spur teeth
+  public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
 
   // Drive encoder configuration
   public static final double driveEncoderPositionFactor =
@@ -79,7 +76,7 @@ public class DriveConstants {
   // Turn motor configuration
   public static final boolean turnInverted = false;
   public static final int turnMotorCurrentLimit = 20;
-  public static final double turnMotorReduction = 46.42;
+  public static final double turnMotorReduction = 9424.0 / 203.0;
   public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
 
   // Turn encoder configuration
