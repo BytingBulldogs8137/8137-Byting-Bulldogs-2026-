@@ -23,8 +23,8 @@ public final class Constants {
 
     public static final double maxSpeed = Units.feetToMeters(10);
 
-    public static final int SHOOTER = 0;
-    public static final int CLIMB = 0;
+    public static final int SHOOTER = 9;
+    public static final int CLIMB = 10;
   }
 
   public static final Mode simMode = Mode.SIM;
