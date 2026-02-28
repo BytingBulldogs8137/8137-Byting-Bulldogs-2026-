@@ -1,0 +1,34 @@
+// Copyright (c) 2026 FRC Team 4533 (Phoenix)
+// Derived from the AdvantageKit framework by Littleton Robotics
+//
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
+
+package frc.robot.subsystems.climber;
+
+import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+
+/**
+ * Hardware and tuning constants for the climb subsystem.
+ *
+ * <p>Contains CAN IDs, current limits, and gearbox models for the climb mechanism.
+ */
+public final class ClimberConstants {
+  // CAN IDs
+  /** CAN ID for the lift mechanism motor. */
+  public static final int liftMotorCanId = 19;
+
+  // Motor and current limits
+  /** Maximum current limit for the lift motor to prevent thermal damage. */
+  public static final Current liftMotorCurrentLimit = Amps.of(30);
+  /** The gearbox model for the lift motor (e.g., AndyMark Snow Blower). */
+  public static final DCMotor liftGearbox = DCMotor.getNEO(1);
+
+  /** Default voltage used for lifting and lowering the mechanism. */
+  public static final Voltage defaultLiftVoltage = Volts.of(6.0);
+}

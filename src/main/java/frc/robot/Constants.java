@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -15,6 +16,17 @@ import edu.wpi.first.wpilibj.RobotBase;
  * (log replay from a file).
  */
 public final class Constants {
+  public static class OperatorConstants {
+    public static final int driverControllerPort = 0;
+    public static final int operatorControllerPort = 1;
+    public static final double DeadBand = 0.05;
+
+    public static final double maxSpeed = Units.feetToMeters(10);
+
+    public static final int SHOOTER = 0;
+    public static final int CLIMB = 0;
+  }
+
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 

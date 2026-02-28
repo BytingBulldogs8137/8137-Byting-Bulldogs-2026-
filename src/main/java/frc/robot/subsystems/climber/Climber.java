@@ -1,82 +1,87 @@
+// Copyright (c) 2026 FRC Team 4533 (Phoenix)
+// Derived from the AdvantageKit framework by Littleton Robotics
+//
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
+
 package frc.robot.subsystems.climber;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.climber.ClimberConstants.*;
+
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
+/**
+ * Subsystem for the robot's climb mechanism.
+ *
+ * <p>Handles controlling the lift motor voltage and monitoring limit switches to prevent
+ * over-extension or damage to the mechanism.
+ */
 public class Climber extends SubsystemBase {
+  private final ClimberIO io;
+  private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
-  // Motor controller for the climber
-  private final SparkMax climberMotor;
+  private final Alert disconnectedAlert = new Alert("Climber IO disconnected", AlertType.kWarning);
 
-  // Limit switches for safety
-  // private final DigitalInput topLimitSwitch;
-  // private final DigitalInput bottomLimitSwitch;
-
-  // Motor configuration constants
-  private static final int CLIMBER_MOTOR_ID = 15; // Change to your CAN ID
-  // private static final int TOP_LIMIT_CHANNEL = 0; // DIO port
-  // private static final int BOTTOM_LIMIT_CHANNEL = 1; // DIO port
-  private static final double CLIMB_SPEED = 0.8; // 80% power
-
-  public Climber() {
-    // climberMotor = new SparkMax(CLIMBER_MOTOR_ID, MotorType.kBrushless);
-    climberMotor = new SparkMax(CLIMBER_MOTOR_ID, MotorType.kBrushless);
-    SparkMaxConfig config = new SparkMaxConfig();
-    config
-        .smartCurrentLimit(40)
-        .idleMode(IdleMode.kBrake)
-        .inverted(false)
-        .voltageCompensation(12.0);
-
-    // Persist parameters to retain configuration in the event of a power cycle
-    climberMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    // topLimitSwitch = new DigitalInput(TOP_LIMIT_CHANNEL);
-    // bottomLimitSwitch = new DigitalInput(BOTTOM_LIMIT_CHANNEL);
+  /**
+   * Creates a new Climb subsystem.
+   *
+   * @param io The abstraction layer for the climb hardware.
+   */
+  public Climber(ClimberIO io) {
+    this.io = io;
   }
 
-  /** Raise the climber */
-  public void climbUp() {
-    // if (!isAtTop()) {
-    climberMotor.set(CLIMB_SPEED);
-    // } else {
-    // stop();
-    // }
+  /** Updates hardware inputs, logs data, and updates status alerts. */
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Climb", inputs);
+    disconnectedAlert.set(!inputs.connected);
   }
 
-  /** Lower the climber */
-  public void climbDown() {
-    // if (!isAtBottom()) {
-    climberMotor.set(-CLIMB_SPEED);
-    // } else {
-    // stop();
-    // }
+  @Override
+  public void simulationPeriodic() {}
+
+  /** Moves the lift mechanism up at the default voltage. */
+  public void startLiftUp() {
+    io.setLiftVoltage(defaultLiftVoltage);
   }
 
-  /** Stop the climber motor */
+  /** Moves the lift mechanism down at the default voltage. */
+  public void startLiftDown() {
+    io.setLiftVoltage(defaultLiftVoltage.unaryMinus());
+  }
+
+  /** Stops the lift mechanism. */
+  public void stopLift() {
+    io.setLiftVoltage(Volts.of(0.0));
+  }
+
+  /** Stops all climb mechanism components. */
   public void stop() {
-    climberMotor.stopMotor();
+    stopLift();
   }
 
-  /** Check if top limit switch is triggered */
-  // public boolean isAtTop() {
-  //     return !topLimitSwitch.get(); // Assuming NC wiring
-  // }
+  /**
+   * Checks if the lift has reached its upper limit.
+   *
+   * @return True if upper limit switch is pressed or hardware is disconnected.
+   */
+  public boolean liftUpperLimit() {
+    return inputs.upperLimit || !inputs.connected;
+  }
 
-  /** Check if bottom limit switch is triggered */
-  // public boolean isAtBottom() {
-  //     return !bottomLimitSwitch.get(); // Assuming NC wiring
-  // }
-
-  // @Override
-  // public void periodic() {
-  //     // Optional: log status to SmartDashboard
-  //     // SmartDashboard.putBoolean("Climber Top", isAtTop());
-  //     // SmartDashboard.putBoolean("Climber Bottom", isAtBottom());
-  // }
+  /**
+   * Checks if the lift has reached its lower limit.
+   *
+   * @return True if lower limit switch is pressed or hardware is disconnected.
+   */
+  public boolean liftLowerLimit() {
+    return inputs.lowerLimit || !inputs.connected;
+  }
 }
