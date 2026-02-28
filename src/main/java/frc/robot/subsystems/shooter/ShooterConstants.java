@@ -8,11 +8,11 @@
 package frc.robot.subsystems.shooter;
 
 public class ShooterConstants {
-  public static final int feederCanId = 5;
+  public static final int feederCanId = 9;
   public static final double feederMotorReduction = 1.0;
   public static final int feederCurrentLimit = 60;
 
-  public static final int intakeLauncherCanId = 6;
+  public static final int intakeLauncherCanId = 10;
   public static final double intakeLauncherMotorReduction = 1.0;
   public static final int intakeLauncherCurrentLimit = 60;
 
