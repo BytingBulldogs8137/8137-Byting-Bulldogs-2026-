@@ -47,7 +47,11 @@ public class Climber extends SubsystemBase {
   @Override
   public void simulationPeriodic() {}
 
-  /** Moves the lift mechanism up at the default voltage. */
+  /**
+   * Moves the lift mechanism up at the default voltage.
+   *
+   * @return
+   */
   public void startLiftUp() {
     io.setLiftVoltage(defaultLiftVoltage);
   }
@@ -60,28 +64,5 @@ public class Climber extends SubsystemBase {
   /** Stops the lift mechanism. */
   public void stopLift() {
     io.setLiftVoltage(Volts.of(0.0));
-  }
-
-  /** Stops all climb mechanism components. */
-  public void stop() {
-    stopLift();
-  }
-
-  /**
-   * Checks if the lift has reached its upper limit.
-   *
-   * @return True if upper limit switch is pressed or hardware is disconnected.
-   */
-  public boolean liftUpperLimit() {
-    return inputs.upperLimit || !inputs.connected;
-  }
-
-  /**
-   * Checks if the lift has reached its lower limit.
-   *
-   * @return True if lower limit switch is pressed or hardware is disconnected.
-   */
-  public boolean liftLowerLimit() {
-    return inputs.lowerLimit || !inputs.connected;
   }
 }

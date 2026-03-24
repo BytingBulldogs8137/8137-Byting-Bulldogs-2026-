@@ -36,13 +36,9 @@ public class ShooterIOSim implements ShooterIO {
     intakeLauncherSim.setInputVoltage(intakeLauncherAppliedVolts);
     intakeLauncherSim.update(0.02);
 
-    inputs.feederPositionRad = feederSim.getAngularPositionRad();
-    inputs.feederVelocityRadPerSec = feederSim.getAngularVelocityRadPerSec();
     inputs.feederAppliedVolts = feederAppliedVolts;
     inputs.feederCurrentAmps = feederSim.getCurrentDrawAmps();
 
-    inputs.intakeLauncherPositionRad = intakeLauncherSim.getAngularPositionRad();
-    inputs.intakeLauncherVelocityRadPerSec = intakeLauncherSim.getAngularVelocityRadPerSec();
     inputs.intakeLauncherAppliedVolts = intakeLauncherAppliedVolts;
     inputs.intakeLauncherCurrentAmps = intakeLauncherSim.getCurrentDrawAmps();
   }

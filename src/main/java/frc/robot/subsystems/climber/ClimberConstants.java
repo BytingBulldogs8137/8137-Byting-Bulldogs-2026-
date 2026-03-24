@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.climber;
+package frc.robot.subsystems.climber; //subsystem import 
 
 import static edu.wpi.first.units.Units.*;
 
@@ -21,7 +21,7 @@ import edu.wpi.first.units.measure.Voltage;
 public final class ClimberConstants {
   // CAN IDs
   /** CAN ID for the lift mechanism motor. */
-  public static final int liftMotorCanId = 19;
+  public static final int liftMotorCanId = 12;
 
   // Motor and current limits
   /** Maximum current limit for the lift motor to prevent thermal damage. */

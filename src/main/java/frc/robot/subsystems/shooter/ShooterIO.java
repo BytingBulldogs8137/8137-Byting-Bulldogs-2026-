@@ -12,13 +12,9 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ShooterIO {
   @AutoLog
   public static class ShooterIOInputs {
-    public double feederPositionRad = 0.0;
-    public double feederVelocityRadPerSec = 0.0;
     public double feederAppliedVolts = 0.0;
     public double feederCurrentAmps = 0.0;
 
-    public double intakeLauncherPositionRad = 0.0;
-    public double intakeLauncherVelocityRadPerSec = 0.0;
     public double intakeLauncherAppliedVolts = 0.0;
     public double intakeLauncherCurrentAmps = 0.0;
   }

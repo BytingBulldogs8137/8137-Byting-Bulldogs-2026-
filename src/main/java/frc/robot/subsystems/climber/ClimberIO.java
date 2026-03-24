@@ -30,12 +30,6 @@ public interface ClimberIO {
     public Voltage appliedVoltage = Volts.of(0.0);
     /** The current being drawn by the lift motor. */
     public Current appliedCurrent = Amps.of(0.0);
-
-    // Limit switches
-    /** Whether the lower limit switch is currently pressed. */
-    public boolean lowerLimit = false;
-    /** Whether the upper limit switch is currently pressed. */
-    public boolean upperLimit = false;
   }
 
   /**

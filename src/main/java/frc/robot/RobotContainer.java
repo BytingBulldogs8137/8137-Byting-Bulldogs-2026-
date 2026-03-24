@@ -7,15 +7,18 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -31,7 +34,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.shooter.ShooterIOSpark;
-
+import frc.robot.util.Util;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -47,7 +50,8 @@ public class RobotContainer {
   private final Climber climber;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandXboxController operatorController = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -65,7 +69,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         shooter = new Shooter(new ShooterIOSpark());
-        climber = new Climber(new ClimberIOSim());
+        climber = new Climber(new ClimberIOReal());
         break;
 
       case SIM:
@@ -98,21 +102,72 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+    autoChooser.addDefaultOption(
+        "Do Nothing", //set for no auto
+        Commands.runOnce(
+            () ->
+                drive.setPose(
+                    Util.flipAllianceIfNeeded(
+                        new Pose2d(
+                            Constants.fieldLength.in(Meters) / 2.0,
+                            Constants.fieldWidth.in(Meters) / 2.0,
+                            new Rotation2d(0))))));
+
+    autoChooser.addOption(
+        "Left Drive Backwards", //sets auto to drive backwards on left side of field
+        Commands.sequence(
+            Commands.runOnce(
+                () ->
+                    drive.setPose(
+                        Util.flipAllianceIfNeeded(
+                            new Pose2d(
+                                3.536,
+                                Constants.fieldWidth.in(Meters) - 2.437,
+                                new Rotation2d(0))))),
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0, 0)), drive)
+                .withTimeout(1.0),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+
+    autoChooser.addOption(
+        "Right Drive Backwards", //sets auto to drive backwards on right side of field
+        Commands.sequence(
+            Commands.runOnce(
+                () ->
+                    drive.setPose(
+                        Util.flipAllianceIfNeeded(new Pose2d(3.536, 2.437, new Rotation2d(0))))),
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+                .withTimeout(1.0),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+
+    autoChooser.addOption(
+        "Middle Shoot", //set to shoot in auto in middle (will figure out how to change to go backwards)
+        Commands.sequence(
+            Commands.runOnce(
+                () ->
+                    drive.setPose(
+                        Util.flipAllianceIfNeeded(
+                            new Pose2d(
+                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0)), drive)
+                .withTimeout(1.0),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            shooter.launch()));
+
     // Set up SysId routines
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -126,18 +181,24 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
-
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> controller.getRightX()));
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> driverController.getRightX()));
 
+    // Shooter commands
+    operatorController.leftBumper().whileTrue(shooter.intake());
+    operatorController.rightBumper().whileTrue(shooter.launch());
+    operatorController.a().whileTrue(shooter.eject());
 
+    // Climb vcommands
+    operatorController.povUp().whileTrue(ClimbCommands.liftUp(climber));
+    operatorController.povDown().whileTrue(ClimbCommands.liftDown(climber));
 
     // Reset gyro to 0° when B button is pressed
-    controller
+    driverController
         .b()
         .onTrue(
             Commands.runOnce(
@@ -146,12 +207,6 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
-
-
-    // Shooter commands
-    controller.leftBumper().whileTrue(shooter.intake());
-    controller.rightBumper().whileTrue(shooter.launch());
-    controller.a().whileTrue(shooter.eject());
   }
 
   /**

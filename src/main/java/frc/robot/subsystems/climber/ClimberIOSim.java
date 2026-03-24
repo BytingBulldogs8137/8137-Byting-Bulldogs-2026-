@@ -52,13 +52,6 @@ public class ClimberIOSim implements ClimberIO {
     inputs.connected = true;
     inputs.appliedVoltage = appliedVoltage;
     inputs.appliedCurrent = Amps.of(Math.abs(liftSim.getCurrentDrawAmps()));
-
-    // Emulate limit switches based on simulated position
-    // NOTE: Current simulation uses absolute value for positioning, needs better mapping
-    inputs.lowerLimit =
-        appliedVoltage.lt(Volts.of(0.0)) && Math.abs(liftSim.getAngularPositionRad()) > 10.0;
-    inputs.upperLimit =
-        appliedVoltage.gt(Volts.of(0.0)) && Math.abs(liftSim.getAngularPositionRad()) > 10.0;
   }
 
   @Override

@@ -14,14 +14,12 @@ import static frc.robot.util.SparkUtil.*;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Voltage;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -33,10 +31,6 @@ import java.util.function.DoubleSupplier;
  */
 public class ClimberIOReal implements ClimberIO {
   private final SparkMax spark = new SparkMax(liftMotorCanId, MotorType.kBrushed);
-
-  // References to the limit switches directly connected to the Spark Max
-  private final SparkLimitSwitch upperLimit = spark.getForwardLimitSwitch();
-  private final SparkLimitSwitch lowerLimit = spark.getReverseLimitSwitch();
 
   // Debouncer to prevent rapidly toggling connection status
   private final Debouncer liftConnectedDebounce =
@@ -72,15 +66,6 @@ public class ClimberIOReal implements ClimberIO {
         (vals) -> inputs.appliedVoltage = Volts.of(vals[0] * vals[1]));
     ifOk(spark, spark::getOutputCurrent, (v) -> inputs.appliedCurrent = Amps.of(v));
 
-    // Safely retrieve limit switch states
-    ifOk(
-        spark,
-        new BooleanSupplier[] {upperLimit::isPressed, lowerLimit::isPressed},
-        (vals) -> {
-          inputs.upperLimit = vals[0];
-          inputs.lowerLimit = vals[1];
-        });
-
     // Debounce the connection status to ensure stability
     inputs.connected = liftConnectedDebounce.calculate(!sparkStickyFault);
   }
@@ -92,15 +77,6 @@ public class ClimberIOReal implements ClimberIO {
    */
   @Override
   public void setLiftVoltage(Voltage voltage) {
-    // Assuming normally open switches, we stop if the switch is closed.
-    boolean atUpper = upperLimit.isPressed();
-    boolean atLower = lowerLimit.isPressed();
-
-    // Stop the motor if trying to move past a limit switch
-    if ((voltage.gt(Volts.of(0.0)) && atUpper) || (voltage.lt(Volts.of(0.0)) && atLower)) {
-      spark.setVoltage(0.0);
-    } else {
-      spark.setVoltage(voltage);
-    }
+    spark.setVoltage(voltage);
   }
 }

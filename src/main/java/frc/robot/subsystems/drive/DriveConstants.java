@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems.drive; //drive subsystem import
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -29,33 +29,31 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = Rotation2d.fromDegrees(-18.97);
-  public static final Rotation2d frontRightZeroRotation = Rotation2d.fromDegrees(161.58);
-  public static final Rotation2d backLeftZeroRotation =
-      Rotation2d.fromDegrees(-25.92); // 155.92 is the +180 value
-  public static final Rotation2d backRightZeroRotation =
-      Rotation2d.fromDegrees(22.49); // 202.49 is the +180deg value
+  public static final Rotation2d frontLeftZeroRotation = Rotation2d.fromDegrees(0); // -30.6
+  public static final Rotation2d frontRightZeroRotation = Rotation2d.fromDegrees(0); // -18.48
+  public static final Rotation2d backLeftZeroRotation = Rotation2d.fromDegrees(0); // 160.6
+  public static final Rotation2d backRightZeroRotation = Rotation2d.fromDegrees(0); // 32.6
 
   // Device CAN IDs
-  public static final int pigeonCanId = 20;
+  public static final int pigeonCanId = 20; //gyro ID
 
-  public static final int frontLeftDriveCanId = 2;
-  public static final int backLeftDriveCanId = 4;
-  public static final int frontRightDriveCanId = 1;
-  public static final int backRightDriveCanId = 3;
+  public static final int frontLeftDriveCanId = 2; //front left 1650 REV NEO motor = (big one)
+  public static final int backLeftDriveCanId = 4; //back left 1650 REV NEO motor
+  public static final int frontRightDriveCanId = 1; //front right 1650 REV NEO motor
+  public static final int backRightDriveCanId = 3; //back right 1650 REV NEO motor
 
-  public static final int frontLeftTurnCanId = 7;
-  public static final int backLeftTurnCanId = 8;
-  public static final int frontRightTurnCanId = 5;
-  public static final int backRightTurnCanId = 6;
+  public static final int frontLeftTurnCanId = 7; //front left 550 REV NEO motor = (small one)
+  public static final int backLeftTurnCanId = 8; //back left 550 REV NEO motor
+  public static final int frontRightTurnCanId = 5; //front right 550 REV NEO motor
+  public static final int backRightTurnCanId = 6; //back right 550 REV NEO motor
 
   // Drive motor configuration
-  public static final int driveMotorCurrentLimit = 30;
+  public static final int driveMotorCurrentLimit = 30; //
   public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
   public static final double driveMotorReduction =
       (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth
   // and 22 spur teeth
-  public static final DCMotor driveGearbox = DCMotor.getNEO(1);
+  public static final DCMotor driveGearbox = DCMotor.getNEO(1); //declares drive motor as REV NEO motor. If not matching real motor, can cause problems and fry motor.
 
   // Drive encoder configuration
   public static final double driveEncoderPositionFactor =

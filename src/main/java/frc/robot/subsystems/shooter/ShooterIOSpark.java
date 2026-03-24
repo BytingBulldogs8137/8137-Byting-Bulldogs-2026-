@@ -11,7 +11,6 @@ import static frc.robot.subsystems.shooter.ShooterConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -25,24 +24,17 @@ import java.util.function.DoubleSupplier;
  * relevant instances of "SparkMax" with "SparkFlex".
  */
 public class ShooterIOSpark implements ShooterIO {
-  private final SparkMax feeder = new SparkMax(feederCanId, MotorType.kBrushless);
-  private final SparkMax intakeLauncher = new SparkMax(intakeLauncherCanId, MotorType.kBrushless);
-  private final RelativeEncoder feederEncoder = feeder.getEncoder();
-  private final RelativeEncoder intakeLauncherEncoder = intakeLauncher.getEncoder();
+  private final SparkMax feeder = new SparkMax(feederCanId, MotorType.kBrushed);
+  private final SparkMax intakeLauncher = new SparkMax(intakeLauncherCanId, MotorType.kBrushed);
 
   public ShooterIOSpark() {
     var feederConfig = new SparkMaxConfig();
     feederConfig
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(feederCurrentLimit)
-        .voltageCompensation(12.0);
-    feederConfig
-        .encoder
-        .positionConversionFactor(
-            2.0 * Math.PI / feederMotorReduction) // Rotor Rotations -> Roller Radians
-        .velocityConversionFactor((2.0 * Math.PI) / 60.0 / feederMotorReduction)
-        .uvwMeasurementPeriod(10)
-        .uvwAverageDepth(2);
+        .voltageCompensation(12.0)
+        .openLoopRampRate(0.05)
+        .inverted(false);
     tryUntilOk(
         feeder,
         5,
@@ -54,15 +46,7 @@ public class ShooterIOSpark implements ShooterIO {
     intakeLauncherConfig
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(intakeLauncherCurrentLimit)
-        .inverted(true)
         .voltageCompensation(12.0);
-    intakeLauncherConfig
-        .encoder
-        .positionConversionFactor(
-            2.0 * Math.PI / intakeLauncherMotorReduction) // Rotor Rotations -> Roller Radians
-        .velocityConversionFactor((2.0 * Math.PI) / 60.0 / intakeLauncherMotorReduction)
-        .uvwMeasurementPeriod(10)
-        .uvwAverageDepth(2);
     tryUntilOk(
         intakeLauncher,
         5,
@@ -75,22 +59,12 @@ public class ShooterIOSpark implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    ifOk(feeder, feederEncoder::getPosition, (value) -> inputs.feederPositionRad = value);
-    ifOk(feeder, feederEncoder::getVelocity, (value) -> inputs.feederVelocityRadPerSec = value);
     ifOk(
         feeder,
         new DoubleSupplier[] {feeder::getAppliedOutput, feeder::getBusVoltage},
         (values) -> inputs.feederAppliedVolts = values[0] * values[1]);
     ifOk(feeder, feeder::getOutputCurrent, (value) -> inputs.feederCurrentAmps = value);
 
-    ifOk(
-        intakeLauncher,
-        intakeLauncherEncoder::getPosition,
-        (value) -> inputs.intakeLauncherPositionRad = value);
-    ifOk(
-        intakeLauncher,
-        intakeLauncherEncoder::getVelocity,
-        (value) -> inputs.intakeLauncherVelocityRadPerSec = value);
     ifOk(
         intakeLauncher,
         new DoubleSupplier[] {intakeLauncher::getAppliedOutput, intakeLauncher::getBusVoltage},
@@ -103,6 +77,7 @@ public class ShooterIOSpark implements ShooterIO {
 
   @Override
   public void setFeederVoltage(double volts) {
+    System.out.println(volts);
     feeder.setVoltage(volts);
   }
 
