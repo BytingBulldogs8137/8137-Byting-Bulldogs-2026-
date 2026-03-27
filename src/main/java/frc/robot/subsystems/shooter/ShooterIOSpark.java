@@ -25,7 +25,7 @@ import java.util.function.DoubleSupplier;
  */
 public class ShooterIOSpark implements ShooterIO {
   private final SparkMax feeder = new SparkMax(feederCanId, MotorType.kBrushed);
-  private final SparkMax intakeLauncher = new SparkMax(intakeLauncherCanId, MotorType.kBrushed);
+  private final SparkMax intakeLauncher = new SparkMax(intakeLauncherCanId, MotorType.kBrushless);
 
   public ShooterIOSpark() {
     var feederConfig = new SparkMaxConfig();

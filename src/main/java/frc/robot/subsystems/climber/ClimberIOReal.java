@@ -30,7 +30,7 @@ import java.util.function.DoubleSupplier;
  * limits.
  */
 public class ClimberIOReal implements ClimberIO {
-  private final SparkMax spark = new SparkMax(liftMotorCanId, MotorType.kBrushed);
+  private final SparkMax spark = new SparkMax(liftMotorCanId, MotorType.kBrushless);
 
   // Debouncer to prevent rapidly toggling connection status
   private final Debouncer liftConnectedDebounce =

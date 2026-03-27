@@ -22,8 +22,8 @@ public class ShooterIOSim implements ShooterIO {
   private DCMotorSim intakeLauncherSim =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(
-              DCMotor.getCIM(1), 0.004, intakeLauncherMotorReduction),
-          DCMotor.getCIM(1));
+              DCMotor.getNEO(1), 0.004, intakeLauncherMotorReduction),
+          DCMotor.getNEO(1));
 
   private double feederAppliedVolts = 0.0;
   private double intakeLauncherAppliedVolts = 0.0;

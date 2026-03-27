@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
     return runEnd(
         () -> {
           io.setFeederVoltage(intakingFeederVoltage);
-          io.setIntakeLauncherVoltage(intakingFeederVoltage);
+          io.setIntakeLauncherVoltage(-intakingFeederVoltage);
         },
         () -> {
           io.setFeederVoltage(0.0);
@@ -45,7 +45,7 @@ public class Shooter extends SubsystemBase {
     return runEnd(
         () -> {
           io.setFeederVoltage(-intakingFeederVoltage);
-          io.setIntakeLauncherVoltage(-intakingFeederVoltage);
+          io.setIntakeLauncherVoltage(intakingFeederVoltage);
         },
         () -> {
           io.setFeederVoltage(0.0);
@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
   public Command launch() {
     return run(() -> {
           io.setFeederVoltage(spinUpFeederVoltage);
-          io.setIntakeLauncherVoltage(-launchingLauncherVoltage);
+          io.setIntakeLauncherVoltage(launchingLauncherVoltage);
         })
         .withTimeout(spinUpSeconds)
         .andThen(runOnce(() -> io.setFeederVoltage(0.0)).withTimeout(0.1))
@@ -65,7 +65,7 @@ public class Shooter extends SubsystemBase {
             run(
                 () -> {
                   io.setFeederVoltage(launchingFeederVoltage);
-                  io.setIntakeLauncherVoltage(-launchingLauncherVoltage);
+                  io.setIntakeLauncherVoltage(launchingLauncherVoltage);
                 }))
         .finallyDo(
             () -> {
