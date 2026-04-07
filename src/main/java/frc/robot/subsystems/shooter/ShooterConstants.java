@@ -25,7 +25,7 @@ public class ShooterConstants {
   public static final double launchingFeederVoltage =
       9.0; // feeder roller voltage when shooting command takes place
   public static final double launchingLauncherVoltage =
-      9.5; // changed to fit right speed of motor. default was 10.6 and value where we want it is
+      9.3; // changed to fit right speed of motor. default was 10.6 and value where we want it is
   // 9.5
   public static final double spinUpFeederVoltage =
       -6.0; // flywheel voltage when shooting command takes place

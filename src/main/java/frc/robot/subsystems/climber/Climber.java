@@ -1,68 +1,59 @@
-// Copyright (c) 2026 FRC Team 4533 (Phoenix)
-// Derived from the AdvantageKit framework by Littleton Robotics
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.climber;
 
-import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.subsystems.climber.ClimberConstants.*;
-
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
 
-/**
- * Subsystem for the robot's climb mechanism.
- *
- * <p>Handles controlling the lift motor voltage and monitoring limit switches to prevent
- * over-extension or damage to the mechanism.
- */
 public class Climber extends SubsystemBase {
-  private final ClimberIO io;
-  private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
+  private static Climber climber = null;
 
-  private final Alert disconnectedAlert = new Alert("Climber IO disconnected", AlertType.kWarning);
+  // Solenoid that controls the climber. Named clearly to avoid confusion with the class.
+  private final Solenoid climberSolenoid =
+      new Solenoid(PneumaticsModuleType.CTREPCM, ClimberConstants.climberSolenoidChannel);
 
+  public static Climber getInstance() {
+    if (climber == null) {
+      climber = new Climber();
+    }
+    return climber;
+  }
+
+  private Climber() {
+    // Initialize hardware and state here
+  }
   /**
-   * Creates a new Climb subsystem.
-   *
-   * @param io The abstraction layer for the climb hardware.
+   * Deploy the climber solenoid (set it up). This is an instant command so the solenoid will remain
+   * in that state after the command completes.
    */
-  public Climber(ClimberIO io) {
-    this.io = io;
+  public Command Up() {
+    return runOnce(() -> climberSolenoid.set(true));
   }
 
-  /** Updates hardware inputs, logs data, and updates status alerts. */
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Climb", inputs);
-    disconnectedAlert.set(!inputs.connected);
+  /** Retract the climber solenoid (set it down). Instant command so it stays until changed. */
+  public Command Down() {
+    return runOnce(() -> climberSolenoid.set(false));
   }
 
-  @Override
-  public void simulationPeriodic() {}
-
-  /**
-   * Moves the lift mechanism up at the default voltage.
-   *
-   * @return
-   */
-  public void startLiftUp() {
-    io.setLiftVoltage(defaultLiftVoltage);
+  /** Toggle the climber solenoid state (useful for button toggle bindings). */
+  public Command toggle() {
+    return runOnce(() -> climberSolenoid.set(!climberSolenoid.get()));
   }
 
-  /** Moves the lift mechanism down at the default voltage. */
-  public void startLiftDown() {
-    io.setLiftVoltage(defaultLiftVoltage.unaryMinus());
+  // Legacy/explicit names kept as instant commands for compatibility with any existing bindings.
+  public Command StartUp() {
+    return Up();
   }
 
-  /** Stops the lift mechanism. */
-  public void stopLift() {
-    io.setLiftVoltage(Volts.of(0.0));
+  public Command StopUp() {
+    return Down();
+  }
+
+  public Command StartDown() {
+    return Down();
+  }
+
+  public Command StopDown() {
+    return Up();
   }
 }
