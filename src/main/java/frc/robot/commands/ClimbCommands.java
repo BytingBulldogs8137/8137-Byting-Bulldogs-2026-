@@ -17,8 +17,9 @@ public class ClimbCommands {
    * @param climb The climbing subsystem.
    * @return A command that runs the lift upward until the upper limit is reached.
    */
-  public static Command liftUp(Climber climber) {  //command to lift elevator
-    return Commands.runEnd(climber::startLiftUp, climber::stopLift, climber); //ends command when executed so
+  public static Command liftUp(Climber climber) { // command to lift elevator
+    return Commands.runEnd(
+        climber::startLiftUp, climber::stopLift, climber); // ends command when executed so
   }
 
   /**
@@ -27,7 +28,8 @@ public class ClimbCommands {
    * @param climb The climbing subsystem.
    * @return A command that runs the lift downward until the lower limit is reached.
    */
-  public static Command liftDown(Climber climber) { //command to lower elevator
-    return Commands.runEnd(climber::startLiftDown, climber::stopLift, climber); //ends command when executed so
+  public static Command liftDown(Climber climber) { // command to lower elevator
+    return Commands.runEnd(
+        climber::startLiftDown, climber::stopLift, climber); // ends command when executed so
   }
 }

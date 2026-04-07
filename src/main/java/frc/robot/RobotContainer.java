@@ -18,12 +18,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberIO;
-import frc.robot.subsystems.climber.ClimberIOReal;
-import frc.robot.subsystems.climber.ClimberIOSim;
+// import frc.robot.subsystems.climber.ClimberIO;
+// import frc.robot.subsystems.climber.ClimberIOReal;
+// import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -47,7 +46,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Shooter shooter;
-  private final Climber climber;
+  private final Climber climber = Climber.getInstance();
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -69,7 +68,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         shooter = new Shooter(new ShooterIOSpark());
-        climber = new Climber(new ClimberIOReal());
+        // climber = new Climber(new ClimberIOReal());
         break;
 
       case SIM:
@@ -82,7 +81,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         shooter = new Shooter(new ShooterIOSim());
-        climber = new Climber(new ClimberIOSim());
+        // climber = new Climber(new ClimberIOSim());
         break;
 
       default:
@@ -95,7 +94,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         shooter = new Shooter(new ShooterIO() {});
-        climber = new Climber(new ClimberIO() {});
+        // climber = new Climber(new ClimberIO() {});
         break;
     }
 
@@ -103,7 +102,7 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     autoChooser.addDefaultOption(
-        "Do Nothing", //set for no auto
+        "Do Nothing", // set for no auto
         Commands.runOnce(
             () ->
                 drive.setPose(
@@ -114,7 +113,7 @@ public class RobotContainer {
                             new Rotation2d(0))))));
 
     autoChooser.addOption(
-        "Left Drive Backwards", //sets auto to drive backwards on left side of field
+        "Left Drive Backwards", // sets auto to drive backwards on left side of field
         Commands.sequence(
             Commands.runOnce(
                 () ->
@@ -124,23 +123,24 @@ public class RobotContainer {
                                 3.536,
                                 Constants.fieldWidth.in(Meters) - 2.437,
                                 new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
                 .withTimeout(1.0),
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
 
     autoChooser.addOption(
-        "Right Drive Backwards", //sets auto to drive backwards on right side of field
+        "Right Drive Backwards", // sets auto to drive backwards on right side of field
         Commands.sequence(
             Commands.runOnce(
                 () ->
                     drive.setPose(
                         Util.flipAllianceIfNeeded(new Pose2d(3.536, 2.437, new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
                 .withTimeout(1.0),
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
 
     autoChooser.addOption(
-        "Middle Shoot", //set to shoot in auto in middle (will figure out how to change to go backwards)
+        "Middle Shoot", // set to shoot in auto in middle (will figure out how to change to go
+        // backwards)
         Commands.sequence(
             Commands.runOnce(
                 () ->
@@ -148,10 +148,31 @@ public class RobotContainer {
                         Util.flipAllianceIfNeeded(
                             new Pose2d(
                                 3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
                 .withTimeout(1.0),
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
             shooter.launch()));
+
+    autoChooser.addOption(
+        "Middle Climb", // set to climb in auto in middle
+        // Run the main sequence while a parallel delayed command will retract the climber
+        Commands.parallel(
+            // Main sequence: deploy, pose, drive, stop
+            Commands.sequence(
+                climber.Up(),
+                Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            Util.flipAllianceIfNeeded(
+                                new Pose2d(
+                                    3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
+                Commands.run(() -> drive.runVelocity(new ChassisSpeeds(3.0, 0, 0)), drive)
+                    .withTimeout(1.0),
+                Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)),
+
+            // Delayed retraction: wait 2.0 seconds, then retract the climber
+            Commands.sequence(Commands.waitSeconds(0.0), climber.Down())));
+    
 
     // Set up SysId routines
     // autoChooser.addOption(
@@ -193,9 +214,9 @@ public class RobotContainer {
     operatorController.rightBumper().whileTrue(shooter.launch());
     operatorController.a().whileTrue(shooter.eject());
 
-    // Climb vcommands
-    operatorController.povUp().whileTrue(ClimbCommands.liftUp(climber));
-    operatorController.povDown().whileTrue(ClimbCommands.liftDown(climber));
+    // Climb commands
+    operatorController.povUp().whileTrue(climber.Up());
+    operatorController.povDown().whileTrue(climber.Down());
 
     // Reset gyro to 0° when B button is pressed
     driverController

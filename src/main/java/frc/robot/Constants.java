@@ -20,17 +20,19 @@ import edu.wpi.first.wpilibj.RobotBase;
  */
 public final class Constants {
   public static class OperatorConstants {
-    public static final int driverControllerPort = 0; //declares USB port 0 in driver station as driver controller
-    public static final int operatorControllerPort = 1; //declares USB port 1 in driver station as operator/secondary controller
-    public static final double DeadBand = 0.05; //controller deadband
+    public static final int driverControllerPort =
+        0; // declares USB port 0 in driver station as driver controller
+    public static final int operatorControllerPort =
+        1; // declares USB port 1 in driver station as operator/secondary controller
+    public static final double DeadBand = 0.05; // controller deadband
 
     public static final double maxSpeed = Units.feetToMeters(10);
 
-    public static final int Launcher = 10; //launcher motor CAN ID
-    public static final int Intake = 9; //Intake motor CAN ID
+    public static final int Launcher = 10; // launcher motor CAN ID
+    public static final int Intake = 9; // Intake motor CAN ID
   }
 
-  public static final Mode simMode = Mode.SIM; //creates robot sim
+  public static final Mode simMode = Mode.SIM; // creates robot sim
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
   public static enum Mode {
