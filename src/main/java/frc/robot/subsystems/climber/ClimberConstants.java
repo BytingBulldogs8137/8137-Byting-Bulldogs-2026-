@@ -9,5 +9,5 @@ package frc.robot.subsystems.climber;
 
 public class ClimberConstants {
   public static final int climberSolenoidChannel =
-      1; // channel for the solenoid that controls the climber
+      0; // channel for the solenoid that controls the climber
 }

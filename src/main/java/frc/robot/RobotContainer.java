@@ -154,26 +154,24 @@ public class RobotContainer {
             shooter.launch()));
 
     autoChooser.addOption(
-        "Middle Climb", // set to climb in auto in middle
+        "Middle Climb",
+        // set to climb in auto in middle
         // Run the main sequence while a parallel delayed command will retract the climber
-        Commands.parallel(
-            // Main sequence: deploy, pose, drive, stop
-            Commands.sequence(
-                climber.Up(),
-                Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            Util.flipAllianceIfNeeded(
-                                new Pose2d(
-                                    3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-                Commands.run(() -> drive.runVelocity(new ChassisSpeeds(3.0, 0, 0)), drive)
-                    .withTimeout(1.0),
-                Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)),
 
-            // Delayed retraction: wait 2.0 seconds, then retract the climber
-            Commands.sequence(Commands.waitSeconds(0.0), climber.Down())));
-    
-
+        // Main sequence: deploy, pose, drive, stop
+        Commands.sequence(
+            climber.Up(),
+            Commands.runOnce(
+                () ->
+                    drive.setPose(
+                        Util.flipAllianceIfNeeded(
+                            new Pose2d(
+                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(3.0, 0, 0)), drive)
+                .withTimeout(1.0),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+            climber.Down();
+            
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
