@@ -165,14 +165,15 @@ public class RobotContainer {
                         drive.setPose(
                             Util.flipAllianceIfNeeded(
                                 new Pose2d(
-                                    3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
+                                    3.536,
+                                    Constants.fieldWidth.in(Meters) / 2.0,
+                                    new Rotation2d(0))))),
                 Commands.run(() -> drive.runVelocity(new ChassisSpeeds(3.0, 0, 0)), drive)
                     .withTimeout(1.0),
                 Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)),
 
             // Delayed retraction: wait 2.0 seconds, then retract the climber
             Commands.sequence(Commands.waitSeconds(0.0), climber.Down())));
-    
 
     // Set up SysId routines
     // autoChooser.addOption(

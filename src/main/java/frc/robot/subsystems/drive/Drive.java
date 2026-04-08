@@ -22,6 +22,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -39,6 +40,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -55,6 +58,18 @@ public class Drive extends SubsystemBase {
 
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
   private Rotation2d rawGyroRotation = Rotation2d.kZero;
+  // Dynamic kinematics for fault-tolerant driving (mask -> kinematics for active modules)
+  private final SwerveDriveKinematics[] dynamicKinematics = new SwerveDriveKinematics[16];
+  private final boolean[] isCaster = new boolean[4];
+  private final boolean[] isOpportunistic = new boolean[4];
+  private final boolean[] isDead = new boolean[4];
+  private final SwerveModuleState[] finalStates =
+      new SwerveModuleState[] {
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState()
+      };
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
@@ -114,6 +129,25 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    // Precompute dynamic kinematics for all non-empty module masks so we can fall back
+    // to fewer modules when some fail. Mask bit i corresponds to module i being present.
+    for (int mask = 1; mask < dynamicKinematics.length; mask++) {
+      List<Translation2d> active = new ArrayList<>();
+      for (int m = 0; m < 4; m++) {
+        if ((mask & (1 << m)) != 0) {
+          active.add(moduleTranslations[m]);
+        }
+      }
+
+      while (active.size() < 2) {
+        // SwerveDriveKinematics requires at least two translations; pad with zeros to avoid
+        // exceptions when only one module remains.
+        active.add(new Translation2d());
+      }
+
+      dynamicKinematics[mask] = new SwerveDriveKinematics(active.toArray(new Translation2d[0]));
+    }
   }
 
   @Override
@@ -181,22 +215,68 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
-    // Calculate module setpoints
+    // Fault-tolerant drive: compute healthy modules and fall back to dynamic kinematics
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
 
-    // Log unoptimized setpoints
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
-
-    // Send setpoints to modules
+    int healthyMask = 0;
     for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(setpointStates[i]);
+      boolean driveOK = modules[i].isDriveMotorHealthy();
+      boolean turnOK = modules[i].isTurnMotorHealthy();
+      boolean encOK = modules[i].isTurnEncoderHealthy();
+
+      isCaster[i] = false;
+      isOpportunistic[i] = false;
+      isDead[i] = false;
+
+      if (!encOK) {
+        isDead[i] = true;
+      } else if (driveOK && turnOK) {
+        healthyMask |= (1 << i);
+      } else if (!driveOK && turnOK) {
+        isCaster[i] = true;
+      } else if (driveOK && !turnOK) {
+        isOpportunistic[i] = true;
+      } else {
+        isDead[i] = true;
+      }
     }
 
-    // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    // Compute ideal states from full kinematics (for angles / opportunistic behavior)
+    SwerveModuleState[] idealStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+
+    // Compute balanced states for healthy subset, if any
+    SwerveModuleState[] balancedStates = null;
+    if (healthyMask > 0) {
+      balancedStates = dynamicKinematics[healthyMask].toSwerveModuleStates(discreteSpeeds);
+      SwerveDriveKinematics.desaturateWheelSpeeds(balancedStates, maxSpeedMetersPerSec);
+    }
+
+    // Assign final states per-module and command modules
+    int balancedIdx = 0;
+    for (int i = 0; i < 4; i++) {
+      if (isDead[i]) {
+        finalStates[i].speedMetersPerSecond = 0.0;
+        finalStates[i].angle = modules[i].getAngle();
+        modules[i].stop();
+      } else if (isCaster[i]) {
+        finalStates[i].speedMetersPerSecond = 0.0;
+        finalStates[i].angle = idealStates[i].angle;
+        modules[i].runSetpoint(finalStates[i]);
+      } else if (isOpportunistic[i]) {
+        finalStates[i].speedMetersPerSecond = idealStates[i].speedMetersPerSecond;
+        finalStates[i].angle = idealStates[i].angle;
+        modules[i].runSetpoint(finalStates[i]);
+      } else {
+        // Healthy module: consume next balanced state
+        finalStates[i].speedMetersPerSecond = balancedStates[balancedIdx].speedMetersPerSecond;
+        finalStates[i].angle = balancedStates[balancedIdx].angle;
+        modules[i].runSetpoint(finalStates[i]);
+        balancedIdx++;
+      }
+    }
+
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", finalStates);
+    Logger.recordOutput("Drive/FaultTolerantMask", healthyMask);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

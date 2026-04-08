@@ -122,4 +122,25 @@ public class Module {
   public double getFFCharacterizationVelocity() {
     return inputs.driveVelocityRadPerSec;
   }
+
+  /** Returns whether the drive motor is currently healthy/connected. */
+  public boolean isDriveMotorHealthy() {
+    return inputs.driveConnected;
+  }
+
+  /** Returns whether the turn motor is currently healthy/connected. */
+  public boolean isTurnMotorHealthy() {
+    return inputs.turnConnected;
+  }
+
+  /** Returns whether the turn encoder (used for steering) is healthy. */
+  public boolean isTurnEncoderHealthy() {
+    // We only have a single signal for the turn assembly; reuse turnConnected as encoder health.
+    return inputs.turnConnected;
+  }
+
+  /** Returns whether the whole module is healthy (both drive and turn present). */
+  public boolean isHealthy() {
+    return isDriveMotorHealthy() && isTurnMotorHealthy() && isTurnEncoderHealthy();
+  }
 }
