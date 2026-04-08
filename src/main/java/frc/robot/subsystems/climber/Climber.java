@@ -26,12 +26,12 @@ public class Climber extends SubsystemBase {
    * Deploy the climber solenoid (set it up). This is an instant command so the solenoid will remain
    * in that state after the command completes.
    */
-  public Command Up() {
+  public Command up() {
     return runOnce(() -> climberSolenoid.set(true));
   }
 
   /** Retract the climber solenoid (set it down). Instant command so it stays until changed. */
-  public Command Down() {
+  public Command down() {
     return runOnce(() -> climberSolenoid.set(false));
   }
 
@@ -41,19 +41,19 @@ public class Climber extends SubsystemBase {
   }
 
   // Legacy/explicit names kept as instant commands for compatibility with any existing bindings.
-  public Command StartUp() {
-    return Up();
+  public Command startUp() {
+    return up();
   }
 
-  public Command StopUp() {
-    return Down();
+  public Command stopUp() {
+    return down();
   }
 
-  public Command StartDown() {
-    return Down();
+  public Command startDown() {
+    return down();
   }
 
-  public Command StopDown() {
-    return Up();
+  public Command stopDown() {
+    return up();
   }
 }
