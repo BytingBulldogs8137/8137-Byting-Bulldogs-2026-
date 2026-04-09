@@ -154,24 +154,71 @@ public class RobotContainer {
             shooter.launch()));
 
     autoChooser.addOption(
-        "Middle Climb",
-        // set to climb in auto in middle
-        // Run the main sequence while a parallel delayed command will retract the climber
-
-        // Main sequence: deploy, pose, drive, stop
+        "Middle Shoot and Climb", // drive back 1m, shoot for 5s, drive back 2m, climb
         Commands.sequence(
-            climber.Up(),
+            // Set initial pose
             Commands.runOnce(
                 () ->
                     drive.setPose(
                         Util.flipAllianceIfNeeded(
                             new Pose2d(
-                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(3.0, 0, 0)), drive)
+                                3.536,
+                                Constants.fieldWidth.in(Meters) / 2.0,
+                                new Rotation2d(0))))),
+            // Drive back 1 meter in 1 second (v = -1.0 m/s)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
                 .withTimeout(1.0),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
-            climber.Down();
-            
+            // Stop and Shoot for 5 seconds
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            shooter.launch().withTimeout(5.0),
+            // Drive back 2 more meters in 2 seconds (v = -1.0 m/s)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+                .withTimeout(2.0),
+            // Stop driving
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            // Extend climber
+            climber.up(),
+            // Wait for extension
+            Commands.waitSeconds(1.0),
+            // Drive forward very slowly for 1 second to engage tower
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
+                .withTimeout(1.0),
+            // Stop and retract climber to lift robot
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            climber.down(),
+            // Wait for retraction to complete
+            Commands.waitSeconds(2.0)));
+
+    autoChooser.addOption(
+        "Middle Climb", // Drive back 3m, then climb
+        Commands.sequence(
+            // Set initial pose
+            Commands.runOnce(
+                () ->
+                    drive.setPose(
+                        Util.flipAllianceIfNeeded(
+                            new Pose2d(
+                                3.536,
+                                Constants.fieldWidth.in(Meters) / 2.0,
+                                new Rotation2d(0))))),
+            // Drive back 3 meters in 3 seconds (v = -1.0 m/s)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+                .withTimeout(3.0),
+            // Stop driving
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            // Extend climber
+            climber.up(),
+            // Wait for extension
+            Commands.waitSeconds(1.0),
+            // Drive forward slowly to engage tower
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
+                .withTimeout(1.0),
+            // Stop and retract climber to lift robot
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            climber.down(),
+            // Wait for retraction to complete
+            Commands.waitSeconds(2.0)));
+
     // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
@@ -213,8 +260,8 @@ public class RobotContainer {
     operatorController.a().whileTrue(shooter.eject());
 
     // Climb commands
-    operatorController.povUp().whileTrue(climber.Up());
-    operatorController.povDown().whileTrue(climber.Down());
+    operatorController.povUp().whileTrue(climber.up());
+    operatorController.povDown().whileTrue(climber.down());
 
     // Reset gyro to 0° when B button is pressed
     driverController
