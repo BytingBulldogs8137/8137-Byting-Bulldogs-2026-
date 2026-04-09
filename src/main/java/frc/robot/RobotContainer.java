@@ -162,9 +162,7 @@ public class RobotContainer {
                     drive.setPose(
                         Util.flipAllianceIfNeeded(
                             new Pose2d(
-                                3.536,
-                                Constants.fieldWidth.in(Meters) / 2.0,
-                                new Rotation2d(0))))),
+                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
             // Drive back 1 meter in 1 second (v = -1.0 m/s)
             Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
                 .withTimeout(1.0),
@@ -198,9 +196,7 @@ public class RobotContainer {
                     drive.setPose(
                         Util.flipAllianceIfNeeded(
                             new Pose2d(
-                                3.536,
-                                Constants.fieldWidth.in(Meters) / 2.0,
-                                new Rotation2d(0))))),
+                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
             // Drive back 3 meters in 3 seconds (v = -1.0 m/s)
             Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
                 .withTimeout(3.0),

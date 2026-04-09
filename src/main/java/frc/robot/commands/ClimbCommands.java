@@ -19,7 +19,7 @@ public class ClimbCommands {
    */
   public static Command Up(Climber climber) { // command to lift elevator
     return Commands.runEnd(
-        climber::StartUp, climber::StopUp, climber); // ends command when executed so
+        climber::startUp, climber::stopUp, climber); // ends command when executed so
   }
 
   /**
@@ -30,6 +30,6 @@ public class ClimbCommands {
    */
   public static Command Down(Climber climber) { // command to lower elevator
     return Commands.runEnd(
-        climber::StartDown, climber::StopDown, climber); // ends command when executed so
+        climber::startDown, climber::stopDown, climber); // ends command when executed so
   }
 }
