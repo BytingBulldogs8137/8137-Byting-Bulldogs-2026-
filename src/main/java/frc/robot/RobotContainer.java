@@ -123,9 +123,10 @@ public class RobotContainer {
                                 3.536,
                                 Constants.fieldWidth.in(Meters) - 2.437,
                                 new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(2.0, 0, 0)), drive)
                 .withTimeout(1.0),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            shooter.launch()));
 
     autoChooser.addOption(
         "Right Drive Backwards", // sets auto to drive backwards on right side of field
@@ -134,9 +135,10 @@ public class RobotContainer {
                 () ->
                     drive.setPose(
                         Util.flipAllianceIfNeeded(new Pose2d(3.536, 2.437, new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(2.0, 0, 0)), drive)
                 .withTimeout(1.0),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+            shooter.launch()));
 
     autoChooser.addOption(
         "Middle Shoot", // set to shoot in auto in middle (will figure out how to change to go
@@ -150,70 +152,72 @@ public class RobotContainer {
                                 3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
             Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
                 .withTimeout(1.0),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            shooter.launch()));
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
+    // shooter.launch())); disabling for now
 
-    autoChooser.addOption(
-        "Middle Shoot and Climb", // drive back 1m, shoot for 5s, drive back 2m, climb
-        Commands.sequence(
-            // Set initial pose
-            Commands.runOnce(
-                () ->
-                    drive.setPose(
-                        Util.flipAllianceIfNeeded(
-                            new Pose2d(
-                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-            // Drive back 1 meter in 1 second (v = -1.0 m/s)
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
-                .withTimeout(1.0),
-            // Stop and Shoot for 5 seconds
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            shooter.launch().withTimeout(5.0),
-            // Drive back 2 more meters in 2 seconds (v = -1.0 m/s)
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
-                .withTimeout(2.0),
-            // Stop driving
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            // Extend climber
-            climber.up(),
-            // Wait for extension
-            Commands.waitSeconds(1.0),
-            // Drive forward very slowly for 1 second to engage tower
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
-                .withTimeout(1.0),
-            // Stop and retract climber to lift robot
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            climber.down(),
-            // Wait for retraction to complete
-            Commands.waitSeconds(2.0)));
+    // autoChooser.addOption(
+    //     "Middle Shoot and Climb", // drive back 1m, shoot for 5s, drive back 2m, climb
+    //     Commands.sequence(
+    //         // Set initial pose
+    //         Commands.runOnce(
+    //             () ->
+    //                 drive.setPose(
+    //                     Util.flipAllianceIfNeeded(
+    //                         new Pose2d(
+    //                             3.536, Constants.fieldWidth.in(Meters) / 2.0, new
+    // Rotation2d(0))))),
+    //         // Drive back 1 meter in 1 second (v = -1.0 m/s)
+    //         Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+    //             .withTimeout(1.0),
+    //         // Stop and Shoot for 5 seconds
+    //         Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+    //         shooter.launch().withTimeout(5.0),
+    //         // Drive back 2 more meters in 2 seconds (v = -1.0 m/s)
+    //         Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+    //             .withTimeout(2.0),
+    //         // Stop driving
+    //         Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+    //         // Extend climber
+    //         climber.up(),
+    //         // Wait for extension
+    //         Commands.waitSeconds(1.0),
+    //         // Drive forward very slowly for 1 second to engage tower
+    //         Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
+    //             .withTimeout(1.0),
+    //         // Stop and retract climber to lift robot
+    //         Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+    //         climber.down()));
+    // Wait for retraction to complete
+    // Commands.waitSeconds(2.0)));
 
-    autoChooser.addOption(
-        "Middle Climb", // Drive back 3m, then climb
-        Commands.sequence(
-            // Set initial pose
-            Commands.runOnce(
-                () ->
-                    drive.setPose(
-                        Util.flipAllianceIfNeeded(
-                            new Pose2d(
-                                3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-            // Drive back 3 meters in 3 seconds (v = -1.0 m/s)
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
-                .withTimeout(3.0),
-            // Stop driving
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            // Extend climber
-            climber.up(),
-            // Wait for extension
-            Commands.waitSeconds(1.0),
-            // Drive forward slowly to engage tower
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
-                .withTimeout(1.0),
-            // Stop and retract climber to lift robot
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
-            climber.down(),
-            // Wait for retraction to complete
-            Commands.waitSeconds(2.0)));
+    // autoChooser.addOption(
+    //     "Middle Climb", // Drive back 3m, then climb
+    //     Commands.sequence(
+    //         // Set initial pose
+    //         Commands.runOnce(
+    //             () ->
+    //                 drive.setPose(
+    //                     Util.flipAllianceIfNeeded(
+    //                         new Pose2d(
+    //                             3.536, Constants.fieldWidth.in(Meters) / 2.0, new
+    // Rotation2d(0))))),
+    //         // Drive back 3 meters in 3 seconds (v = -1.0 m/s)
+    //         Commands.run(() -> drive.runVelocity(new ChassisSpeeds(-1.0, 0, 0)), drive)
+    //             .withTimeout(3.0),
+    //         // Stop driving
+    //         Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive),
+    //         // Extend climber
+    //         climber.up(),
+    //         // Wait for extension
+    //         Commands.waitSeconds(1.0),
+    //         // Drive forward slowly to engage tower
+    //         Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.5, 0, 0)), drive)
+    //             .withTimeout(1.0),
+    //         // Stop and retract climber to lift robot
+    //         Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds())), drive),
+    //         climber.down()));
+    // Wait for retraction to complete
+    // Commands.waitSeconds(2.0)));
 
     // Set up SysId routines
     // autoChooser.addOption(
