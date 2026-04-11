@@ -150,7 +150,7 @@ public class RobotContainer {
                         Util.flipAllianceIfNeeded(
                             new Pose2d(
                                 3.536, Constants.fieldWidth.in(Meters) / 2.0, new Rotation2d(0))))),
-            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.0, 0, 0)), drive)
+            Commands.run(() -> drive.runVelocity(new ChassisSpeeds(2.0, 0, 0)), drive)
                 .withTimeout(1.0),
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds()), drive)));
     // shooter.launch())); disabling for now
